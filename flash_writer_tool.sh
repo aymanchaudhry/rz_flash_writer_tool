@@ -21,6 +21,9 @@
 # Global Default Settings
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
+# Set to skip any interactive user prompts
+AUTO="${AUTO:-false}"
+
 FIP=0 # TF-A uses FIP instead of BL31
 EMMC_4BIT=0 # eMMC uses 4-bit data, not 8-bit
 if [ "$FW_GUI_MODE" == "" ] ; then
@@ -1578,12 +1581,14 @@ if [ "$CMD" == "fw" ] ; then
 	fi
 
 	if [ "$FW_GUI_MODE" != "2" ] ; then
-		echo "-----------------------------------------------------------------"
-		echo " Make sure the board is configured for \"SCIF Download mode"\"
-		echo " Power on the board and press the RESET button."
-		echo " Then, press ENTER on the keyboard to continue."
-		echo "-----------------------------------------------------------------"
-		read dummy
+		if ! ${AUTO}; then
+			echo "-----------------------------------------------------------------"
+			echo " Make sure the board is configured for \"SCIF Download mode"\"
+			echo " Power on the board and press the RESET button."
+			echo " Then, press ENTER on the keyboard to continue."
+			echo "-----------------------------------------------------------------"
+			read dummy
+		fi
 	fi
 
 	# Check if already running at 115200

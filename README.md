@@ -171,6 +171,12 @@ gedit my_config.ini
 ./flash_writer_tool.sh my_config.ini atf
 ```
 
+* To avoid the manual interaction after the prompt reminding the user to turn
+the board on in the correct mode the `AUTO` environment variable can be set:
+```bash
+AUTO=true ./flash_writer_tool.sh my_config.ini fw
+```
+
 ## Notes on USB Download mode
 
 USB Download mode is supported for RZ/G2E, RZ/G2N and RZ/G2H devices.

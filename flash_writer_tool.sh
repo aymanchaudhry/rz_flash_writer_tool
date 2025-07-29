@@ -105,8 +105,8 @@ Switch settings for SW1002.
 "
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] ||\
-     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3s" ] ; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
+     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3e" ] || [ "$BOARD" == "smarc-rzg3s" ] ; then
 
 	SW_NAME="SW11"
 
@@ -136,6 +136,10 @@ Switch settings for SW1002.
 		if [ "$BOARD_VERSION" == "DISCRETE" ] ; then
 			BOARD_NAME="$BOARD (Discrete Version)"
 		fi
+	fi
+	if [ "$BOARD" == "smarc-rzg3e" ] ; then
+		BOARD_NAME="RZ/G3E SMARC Board by Renesas"
+		SW_NAME="SW_MODE"
 	fi
 	if [ "$BOARD" == "smarc-rzg3s" ] ; then
 		BOARD_NAME="RZ/G3S SMARC Board by Renesas"
@@ -234,6 +238,25 @@ set_flash_address() {
     EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1"  ; EMMC_FIP_SECTOR="100"
   fi
 
+  if [ "$BOARD" == "smarc-rzg3e" ] ; then
+
+    LONGER_CMD_DELAY=1	# These parts need more time between sending commands
+
+    SPI_SA0_RAM=""        ; SPI_SA0_FLASH="" # not used
+    SPI_BL2_RAM="8003600" ; SPI_BL2_FLASH="0"
+    SPI_SA6_RAM=""        ; SPI_SA6_FLASH="" # not used
+    SPI_BL31_RAM=""       ; SPI_BL31_FLASH="" # not used
+    SPI_UBOOT_RAM=""      ; SPI_UBOOT_FLASH="" # not used
+    SPI_FIP_RAM="0"       ; SPI_FIP_FLASH="60000"
+
+    EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
+    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
+    EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
+    EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1"  ; EMMC_FIP_SECTOR="100"
+  fi
+
   if [ "$BOARD" == "smarc-rzg3s" ] ; then
 
     LONGER_CMD_DELAY=1	# These parts need more time between sending commands
@@ -250,7 +273,7 @@ set_flash_address() {
     EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
     EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
     EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
-    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1"  ; EMMC_FIP_SECTOR="100"
   fi
 
   if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
@@ -362,7 +385,8 @@ set_filenames() {
   fi
 
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
-     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3s" ] || [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
+     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3e" ] || [ "$BOARD" == "smarc-rzg3s" ] || \
+     [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
 
 	FIP=1
 	EMMC_4BIT=1
@@ -393,6 +417,9 @@ set_filenames() {
 		else
 			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot"
 		fi
+	fi
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg3e" ]; then
+		FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG3E_EVK_LPDDR4X.mot"
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg3s" ]; then
 		FLASHWRITER="$FILES_DIR/FlashWriter-smarc-rzg3s.mot"
@@ -553,6 +580,7 @@ do_menu_board() {
 	"smarc-rzg2lc"   "  SMARC RZ/G2LC by Renesas Electronics" \
 	"smarc-rzg2ul"   "  SMARC RZ/G2UL by Renesas Electronics" \
 	"smarc-rzv2l"    "  SMARC RZ/V2L by Renesas Electronics" \
+	"smarc-rzg3e"    "  SMARC RZ/G3E by Renesas Electronics" \
 	"smarc-rzg3s"    "  SMARC RZ/G3S by Renesas Electronics" \
 	"rzv2h-evk-ver1" "  RZ/V2H EVK by Renesas Electronics" \
 	"CUSTOM"         "  (manually edit ini file)" \
@@ -584,6 +612,7 @@ do_menu_board() {
 		BOARD_VERSION="DISCRETE"
 	fi
       ;;
+      smarc-rzg3e) BOARD=smarc-rzg3e ; FIP=1 ; EMMC_4BIT=1 ;;
       smarc-rzg3s) BOARD=smarc-rzg3s ; FIP=1 ; EMMC_4BIT=1 ;;
       rzv2h-evk-ver1) BOARD=rzv2h-evk-ver1 ; FIP=1 ; EMMC_4BIT=1 ;;
       CUSTOM) BOARD=CUSTOM ;;
@@ -1015,6 +1044,11 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       DETECTED=1
       # Select PMIC version as default
       BOARD_VERSION="PMIC"
+    elif [ -e ${IMAGES_DIR}/smarc-rzg3e ] ; then
+      BOARD="smarc-rzg3e"
+      FIP=1
+      EMMC_4BIT=1
+      DETECTED=1
     elif [ -e ${IMAGES_DIR}/smarc-rzg3s ] ; then
       BOARD="smarc-rzg3s"
       FIP=1

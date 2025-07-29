@@ -7,6 +7,7 @@ utility.
 ## Supported Renesas evaluation boards
 
 * RZ/G3
+  * RZ/G3E SMARC
   * RZ/G3S SMARC
 * RZ/G2
   * RZ/G2H HiHope
@@ -88,7 +89,7 @@ multiple different .ini files. By default, "config.ini" is chosen.
   * **FLASHWRITER:** The filename of the Flash Writer binary
   * **RZ/G2H, RZ/G2N, RZ/G2M, RZ/G2E:** Set `SA0_FILE`, `BL2_FILE`, `SA6_FILE`,
 `BL31_FILE`, `UBOOT_FILE`
-  * **RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L, RZ/G3S:** Set `BL2_FILE`, `FIP_FILE`
+  * **RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L, RZ/G3E, RZ/G3S:** Set `BL2_FILE`, `FIP_FILE`
 * **Operations:**
   * Select these menu items to perform the operations
   * The "★" symbols shows the operations can be performed next
@@ -166,7 +167,7 @@ gedit my_config.ini
 ./flash_writer_tool.sh my_config.ini u-boot
 ```
 ```bash
-# RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L:
+# RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L, RZ/G3E, RZ/G3S:
 ./flash_writer_tool.sh my_config.ini fw
 ./flash_writer_tool.sh my_config.ini atf
 ```

@@ -172,7 +172,7 @@ Use switches ${SW_NAME} on Carrier board to set the boot mode.
 Switch settings for DSW1.
 
 	xSPI Flash boot            eMMC boot
-	--------------             ---------
+	---------------            ---------
 	1 = xx                     1 = xx
 	2 = xx                     2 = xx
 	3 = xx                     3 = xx
@@ -183,12 +183,52 @@ Switch settings for DSW1.
 	8 = xx                     8 = xx
 
 	SCIF Download mode         eSD boot mode
-	------------------         -----------------
+	------------------         -------------
 	1 = xx                     1 = xx
 	2 = xx                     2 = xx
 	3 = xx                     3 = xx
 	4 = OFF                    4 = ON
 	5 = ON                     5 = OFF
+	6 = xx                     6 = xx
+	7 = xx                     7 = xx
+	8 = xx                     8 = xx
+"
+  fi
+
+  if [ "$BOARD" == "rzt2h-dev" ] ; then
+	BOARD_NAME="RZ/T2H EVK by Renesas"
+	SW_SETTINGS="Please TURN OFF board power when changing switch settings.
+Switch settings for SW14.
+
+	xSPI0 Flash boot           xSPI1 boot
+	----------------           ----------
+	1 = ON                     1 = ON
+	2 = ON                     2 = OFF
+	3 = ON                     3 = ON
+	4 = xx                     4 = xx
+	5 = xx                     5 = xx
+	6 = OFF                    6 = OFF
+	7 = xx                     7 = xx
+	8 = xx                     8 = xx
+
+	eMMC boot                  eSD boot
+	---------                  --------
+	1 = OFF                    1 = ON
+	2 = ON                     2 = OFF
+	3 = ON                     3 = OFF
+	4 = xx                     4 = xx
+	5 = xx                     5 = xx
+	6 = ON                     6 = OFF
+	7 = xx                     7 = xx
+	8 = xx                     8 = xx
+
+	SCIF Download mode         USB Download mode
+	------------------         -----------------
+	1 = OFF                    1 = ON
+	2 = ON                     2 = OFF
+	3 = OFF                    3 = OFF
+	4 = xx                     4 = xx
+	5 = xx                     5 = xx
 	6 = xx                     6 = xx
 	7 = xx                     7 = xx
 	8 = xx                     8 = xx
@@ -295,6 +335,25 @@ set_flash_address() {
     EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
   fi
 
+  if [ "$BOARD" == "rzt2h-dev" ] ; then
+
+    LONGER_CMD_DELAY=1	# These parts need more time between sending commands
+
+    SPI_SA0_RAM=""      ; SPI_SA0_FLASH="" # not used
+    SPI_BL2_RAM="3c600" ; SPI_BL2_FLASH="0"
+    SPI_SA6_RAM=""      ; SPI_SA6_FLASH="" # not used
+    SPI_BL31_RAM=""     ; SPI_BL31_FLASH="" # not used
+    SPI_UBOOT_RAM=""    ; SPI_UBOOT_FLASH="" # not used
+    SPI_FIP_RAM="ab900" ; SPI_FIP_FLASH="60000"
+
+    EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
+    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
+    EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
+    EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
+  fi
+
 }
 
 clear_filenames() {
@@ -386,7 +445,7 @@ set_filenames() {
 
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
      [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3e" ] || [ "$BOARD" == "smarc-rzg3s" ] || \
-     [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
+     [ "$BOARD" == "rzv2h-evk-ver1" ] || [ "$BOARD" == "rzt2h-dev" ]; then
 
 	FIP=1
 	EMMC_4BIT=1
@@ -429,6 +488,12 @@ set_filenames() {
 
 		BL2_FILE=$FILES_DIR/bl2_bp_spi-rzv2h-evk-ver1.srec
 		FIP_FILE=$FILES_DIR/fip-rzv2h-evk-ver1.srec
+	fi
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "rzt2h-dev" ]; then
+		FLASHWRITER="$FILES_DIR/Flash_Programmer_SCIF_CR52_RZT2H_EVK.mot"
+
+		BL2_FILE=$FILES_DIR/bl2_bp_xspi0-rzt2h-dev.srec
+		FIP_FILE=$FILES_DIR/fip-rzt2h-dev.srec
 	fi
 	if [ "$BL2_FILE" == "" ] ; then
 		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.bin
@@ -583,6 +648,7 @@ do_menu_board() {
 	"smarc-rzg3e"    "  SMARC RZ/G3E by Renesas Electronics" \
 	"smarc-rzg3s"    "  SMARC RZ/G3S by Renesas Electronics" \
 	"rzv2h-evk-ver1" "  RZ/V2H EVK by Renesas Electronics" \
+	"rzt2h-dev"      "  RZ/T2H EVK by Renesas Electronics" \
 	"CUSTOM"         "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
@@ -615,6 +681,7 @@ do_menu_board() {
       smarc-rzg3e) BOARD=smarc-rzg3e ; FIP=1 ; EMMC_4BIT=1 ;;
       smarc-rzg3s) BOARD=smarc-rzg3s ; FIP=1 ; EMMC_4BIT=1 ;;
       rzv2h-evk-ver1) BOARD=rzv2h-evk-ver1 ; FIP=1 ; EMMC_4BIT=1 ;;
+      rzt2h-dev) BOARD=rzt2h-dev ; FIP=1 ; EMMC_4BIT=1 ;;
       CUSTOM) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
@@ -1054,6 +1121,16 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       FIP=1
       EMMC_4BIT=1
       DETECTED=1
+    elif [ -e ${IMAGES_DIR}/rzv2h-evk-ver1 ] ; then
+      BOARD="rzv2h-evk-ver1"
+      FIP=1
+      EMMC_4BIT=1
+      DETECTED=1
+    elif [ -e ${IMAGES_DIR}/rzt2h-dev ] ; then
+      BOARD="rzt2h-dev"
+      FIP=1
+      EMMC_4BIT=1
+      DETECTED=1
     else
       # default to RZ/G2M
       BOARD="hihope-rzg2m"
@@ -1355,6 +1432,31 @@ do_xls3() {
 	echo ""
 }
 
+# do_xspiw
+# $1 = string
+# $2 = RAM address to download to
+# $3 = SPI address to write to
+# $4 = filename
+do_xspiw() {
+	# Flash writer just looks for CR. If it see LF, it ignores it.
+	echo "Writting $1 ($4)"
+	echo "Sending XSPIW command..."
+	echo -en "XSPIW 0 0x$3 0x$2 \r" > $SERIAL_DEVICE_INTERFACE
+	sleep $CMD_DELAY
+	echo "Sending file..."
+	stat -L --printf="%s bytes\n" $4
+	dd if=$4 of=$SERIAL_DEVICE_INTERFACE bs=1k status=progress
+	sleep $CMD_DELAY
+
+	# You only need to send a 'y', not the 'y' + CR. But, if the flash is already
+	# blank, flash writer will not ask you to confirm, so we send y + CR
+	# just in case. So if the flash is already blank you will just see an
+	# extra 'command not found' message which does not hurt anything.
+	echo -en "y\r" > $SERIAL_DEVICE_INTERFACE
+	sleep $CMD_DELAY
+	echo ""
+}
+
 # do_em_e
 # $1 = partition number
 do_em_e() {
@@ -1446,8 +1548,13 @@ do_spi_write() {
 	FILENAME=$(basename $4)
 	FILENAME_EXT=`echo ${FILENAME: -5}`
 	if [ "$FILENAME_EXT" == ".srec" ] ; then
-		# S-Record Write
-		do_xls2 "$1" $2 $3 $4
+		if [ "$BOARD" == "rzt2h-dev" ] ; then
+			# S-Record Write
+			do_xspiw "$1" $2 $3 $4
+		else
+			# S-Record Write
+			do_xls2 "$1" $2 $3 $4
+		fi
 	else
 		# Binary Write (RAM address not needed)
 		do_xls3 "$1" $3 $4
@@ -1630,6 +1737,12 @@ if [ "$CMD" == "fw" ] ; then
 	if [ "$?" != "0" ] ; then
 		stty -F $SERIAL_DEVICE_INTERFACE 115200
 		sleep 0.5
+	fi
+
+	# RZ/T2H needs a special "HDR NM" file to be sent before flashwriter
+	if [ "$BOARD" == "rzt2h-dev" ] ; then
+		echo "Sending HDR NM"
+		echo -en "S0090000484452204E4D5D" > $SERIAL_DEVICE_INTERFACE
 	fi
 
 	echo "Sending Flash Writter Binary ($FLASHWRITER)"

@@ -1743,6 +1743,7 @@ if [ "$CMD" == "fw" ] ; then
 	if [ "$BOARD" == "rzt2h-dev" ] ; then
 		echo "Sending HDR NM"
 		echo -en "S0090000484452204E4D5D" > $SERIAL_DEVICE_INTERFACE
+		sleep 1
 	fi
 
 	echo "Sending Flash Writter Binary ($FLASHWRITER)"

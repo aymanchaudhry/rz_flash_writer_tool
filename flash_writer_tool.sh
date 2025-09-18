@@ -166,8 +166,12 @@ Use switches ${SW_NAME} on Carrier board to set the boot mode.
 "
   fi
 
-  if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
-	BOARD_NAME="RZ/V2H EVK by Renesas"
+  if [ "$BOARD" == "rzv2h-evk-ver1" ] || [ "$BOARD" == "rzv2n-evk" ] ; then
+	if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
+		BOARD_NAME="RZ/V2H EVK by Renesas"
+	else
+		BOARD_NAME="RZ/V2N EVK by Renesas"
+	fi
 	SW_SETTINGS="Please TURN OFF board power when changing switch settings.
 Switch settings for DSW1.
 
@@ -316,7 +320,7 @@ set_flash_address() {
     EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1"  ; EMMC_FIP_SECTOR="100"
   fi
 
-  if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
+  if [ "$BOARD" == "rzv2h-evk-ver1" ] || [ "$BOARD" == "rzv2n-evk" ]; then
 
     LONGER_CMD_DELAY=1	# These parts need more time between sending commands
 
@@ -328,11 +332,11 @@ set_flash_address() {
     SPI_FIP_RAM="0"     ; SPI_FIP_FLASH="60000"
 
     EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
-    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_BL2_RAM="8101E00"   ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
     EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
     EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
     EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
-    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1"  ; EMMC_FIP_SECTOR="300"
   fi
 
   if [ "$BOARD" == "rzt2h-dev" ] ; then
@@ -445,7 +449,7 @@ set_filenames() {
 
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
      [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3e" ] || [ "$BOARD" == "smarc-rzg3s" ] || \
-     [ "$BOARD" == "rzv2h-evk-ver1" ] || [ "$BOARD" == "rzt2h-dev" ]; then
+     [ "$BOARD" == "rzv2h-evk-ver1" ] || [ "$BOARD" == "rzv2n-evk" ] || [ "$BOARD" == "rzt2h-dev" ]; then
 
 	FIP=1
 	EMMC_4BIT=1
@@ -488,6 +492,16 @@ set_filenames() {
 
 		BL2_FILE=$FILES_DIR/bl2_bp_spi-rzv2h-evk-ver1.srec
 		FIP_FILE=$FILES_DIR/fip-rzv2h-evk-ver1.srec
+	fi
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "rzv2n-evk" ]; then
+		FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZV2N_DEV_LPDDR4X.mot"
+		if [ "$FLASH" == "1" ]; then
+			BL2_FILE=$FILES_DIR/bl2_bp_mmc-rzv2n-evk.srec
+			FIP_FILE=$FILES_DIR/fip-rzv2n-evk.srec
+		else
+			BL2_FILE=$FILES_DIR/bl2_bp_spi-rzv2n-evk.srec
+			FIP_FILE=$FILES_DIR/fip-rzv2n-evk.srec
+		fi
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "rzt2h-dev" ]; then
 		FLASHWRITER="$FILES_DIR/Flash_Programmer_SCIF_CR52_RZT2H_EVK.mot"
@@ -648,6 +662,7 @@ do_menu_board() {
 	"smarc-rzg3e"    "  SMARC RZ/G3E by Renesas Electronics" \
 	"smarc-rzg3s"    "  SMARC RZ/G3S by Renesas Electronics" \
 	"rzv2h-evk-ver1" "  RZ/V2H EVK by Renesas Electronics" \
+	"rzv2n-evk"      "  RZ/V2N EVK by Renesas Electronics" \
 	"rzt2h-dev"      "  RZ/T2H EVK by Renesas Electronics" \
 	"CUSTOM"         "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
@@ -681,6 +696,7 @@ do_menu_board() {
       smarc-rzg3e) BOARD=smarc-rzg3e ; FIP=1 ; EMMC_4BIT=1 ;;
       smarc-rzg3s) BOARD=smarc-rzg3s ; FIP=1 ; EMMC_4BIT=1 ;;
       rzv2h-evk-ver1) BOARD=rzv2h-evk-ver1 ; FIP=1 ; EMMC_4BIT=1 ;;
+      rzv2n-evk) BOARD=rzv2n-evk ; FIP=1 ; EMMC_4BIT=1 ;;
       rzt2h-dev) BOARD=rzt2h-dev ; FIP=1 ; EMMC_4BIT=1 ;;
       CUSTOM) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
@@ -708,12 +724,14 @@ do_menu_target_flash() {
         # Sometimes the file names are different between SPI and eMMC builds
         #clear_filenames  # Clear all file names
 	BL2_FILE="" # only clear BL2, the rest should have the same name
+	FLASHWRITER="" # clear flash writer because some devices have different binaries
         set_filenames
         ;;
       2\ *) FLASH=1
         # Sometimes the file names are different between SPI and eMMC builds
         #clear_filenames  # Clear all file names
 	BL2_FILE="" # only clear BL2, the rest should have the same name
+	FLASHWRITER="" # clear flash writer because some devices have different binaries
         set_filenames
         ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
@@ -1163,6 +1181,11 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       DETECTED=1
     elif [ -e ${IMAGES_DIR}/rzv2h-evk-ver1 ] ; then
       BOARD="rzv2h-evk-ver1"
+      FIP=1
+      EMMC_4BIT=1
+      DETECTED=1
+    elif [ -e ${IMAGES_DIR}/rzv2n-evk ] ; then
+      BOARD="rzv2n-evk"
       FIP=1
       EMMC_4BIT=1
       DETECTED=1
